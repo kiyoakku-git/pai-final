@@ -2,6 +2,8 @@
 import numpy as np
 from PIL import Image, ImageDraw
 
+from util import to_np
+
 MODEL_ID = "google/owlv2-base-patch16-ensemble"
 
 
@@ -13,7 +15,7 @@ class Detector:
 
     def detect(self, rgb, labels, threshold=0.1):
         """Return detections sorted by score: [{'label', 'score', 'box': (xmin, ymin, xmax, ymax)}]."""
-        img = Image.fromarray(np.asarray(rgb)).convert("RGB")
+        img = Image.fromarray(np.asarray(to_np(rgb), dtype=np.uint8)).convert("RGB")
         out = self.pipe(img, candidate_labels=list(labels), threshold=threshold)
         dets = [
             {"label": d["label"], "score": float(d["score"]),
@@ -30,6 +32,8 @@ def box_to_world(box, pointcloud, mask, block_size=0.04):
     take their median x/y, and put z half a block below the top.
     """
     xmin, ymin, xmax, ymax = (int(round(v)) for v in box)
+    pointcloud = to_np(pointcloud)
+    mask = to_np(mask).astype(bool)
     pts = pointcloud[ymin:ymax + 1, xmin:xmax + 1].reshape(-1, 3)
     valid = mask[ymin:ymax + 1, xmin:xmax + 1].reshape(-1)
     pts = pts[valid]
@@ -42,7 +46,7 @@ def box_to_world(box, pointcloud, mask, block_size=0.04):
 
 
 def draw_detections(rgb, dets, path):
-    img = Image.fromarray(np.asarray(rgb)).convert("RGB")
+    img = Image.fromarray(np.asarray(to_np(rgb), dtype=np.uint8)).convert("RGB")
     draw = ImageDraw.Draw(img)
     for d in dets:
         draw.rectangle(d["box"], outline=(255, 255, 0), width=3)

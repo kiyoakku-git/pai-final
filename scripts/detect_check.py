@@ -8,6 +8,7 @@ from PIL import Image
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from scene import build_scene  # noqa: E402
+from util import to_np  # noqa: E402
 from perception import Detector, box_to_world, draw_detections  # noqa: E402
 
 backend = gs.cpu if "--cpu" in sys.argv else gs.gpu
@@ -16,7 +17,7 @@ scene.step()
 rgb, *_ = eye_cam.render(rgb=True)
 pc, mask = eye_cam.render_pointcloud()
 os.makedirs("outputs", exist_ok=True)
-Image.fromarray(np.asarray(rgb)).save("outputs/eye_cam.png")
+Image.fromarray(to_np(rgb).astype(np.uint8)).save("outputs/eye_cam.png")
 
 detector = Detector()
 labels = list(blocks.keys())
@@ -29,7 +30,7 @@ for name in labels:
     best = dets[0]
     all_dets.append(best)
     est = box_to_world(best["box"], pc, mask)
-    true = np.asarray(blocks[name].get_pos()).astype(float)
+    true = to_np(blocks[name].get_pos())
     err = np.linalg.norm(est[:2] - true[:2]) * 1000 if est is not None else float("nan")
     print(f"{name:12s} score={best['score']:.2f} est={np.round(est, 3)} true={np.round(true, 3)} xy_error={err:.1f} mm")
 draw_detections(rgb, all_dets, "outputs/detect_check.png")
