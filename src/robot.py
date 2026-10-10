@@ -53,6 +53,19 @@ class Arm:
         self.finger_cmd = ("force", np.array([-1.0, -1.0]))
         self.step(steps)
 
+    def go_home(self, steps=120):
+        """Return to the home pose (clears the camera's view of the table)."""
+        from scene import HOME_QPOS
+
+        q_start = self._arm_q()
+        q_goal = HOME_QPOS[: len(ARM_DOFS)]
+        for i in range(1, steps + 1):
+            a = i / steps
+            a = a * a * (3 - 2 * a)
+            self.franka.control_dofs_position(q_start + a * (q_goal - q_start), ARM_DOFS)
+            self.step()
+        self.step(20)
+
     def grasp_point(self):
         return to_np(self.hand.get_pos()) - np.array([0.0, 0.0, HAND_TO_GRASP])
 

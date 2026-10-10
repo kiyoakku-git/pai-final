@@ -13,6 +13,16 @@ TRAY_INNER = 0.16
 TRAY_WALL_H = 0.04
 TRAY_WALL_T = 0.01
 
+# Places inside the tray, used in order so that blocks do not land on top of each other.
+TRAY_SLOTS = [(-0.04, -0.04), (0.04, 0.04), (-0.04, 0.04), (0.04, -0.04)]
+
+
+def in_tray(pos, margin=0.0):
+    """True if an (x, y, ...) position lies inside the tray's inner area."""
+    half = TRAY_INNER / 2 - margin
+    return abs(pos[0] - TRAY_CENTER[0]) < half and abs(pos[1] - TRAY_CENTER[1]) < half
+
+
 HOME_QPOS = np.array([0.0, -0.3, 0.0, -2.2, 0.0, 2.0, 0.79, 0.04, 0.04])
 KP = np.array([4500, 4500, 3500, 3500, 2000, 2000, 2000, 100, 100])
 KV = np.array([450, 450, 350, 350, 200, 200, 200, 10, 10])
@@ -52,7 +62,7 @@ def build_scene(backend=gs.gpu, video_res=(1280, 720)):
     # Camera used by the AI to look at the table (perception).
     eye_cam = scene.add_camera(res=(640, 480), pos=(1.05, 0.05, 0.85), lookat=(0.48, 0.1, 0.0), fov=50, GUI=False)
     # Camera used only for the submitted video.
-    video_cam = scene.add_camera(res=video_res, pos=(1.25, -0.75, 0.65), lookat=(0.40, 0.12, 0.12), fov=40, GUI=False)
+    video_cam = scene.add_camera(res=video_res, pos=(1.45, -0.95, 0.85), lookat=(0.35, 0.10, 0.25), fov=45, GUI=False)
     scene.build()
 
     franka.set_dofs_kp(KP)
