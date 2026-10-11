@@ -1,0 +1,31 @@
+# Genesis + OWLv2 pick-and-place as a dora-rs dataflow.
+#   planner --look/command--> sim --image--> detector --detection--> planner
+#   sim --done--> planner
+nodes:
+  - id: planner
+    path: nodes/planner_node.py
+    env:
+      INSTRUCTION: "clean up all the blocks"
+      MAX_TRIES: "2"
+    inputs:
+      tick: dora/timer/millis/1000      # kick-off (only the first tick is used)
+      detection: detector/detection
+      done: sim/done
+    outputs: [look, command]
+
+  - id: sim
+    path: nodes/sim_node.py
+    env:
+      VIDEO: "outputs/dora/video.mp4"
+    inputs:
+      look: planner/look
+      command: planner/command
+    outputs: [image, done]
+
+  - id: detector
+    path: nodes/detector_node.py
+    env:
+      THRESHOLD: "0.1"
+    inputs:
+      image: sim/image
+    outputs: [detection]
