@@ -8,7 +8,7 @@ Examples
 """
 import re
 
-COLORS = ["red", "green", "blue"]
+COLORS = ["red", "green", "blue", "yellow"]
 
 
 def parse_instruction(text, known=None):

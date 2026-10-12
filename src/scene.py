@@ -7,6 +7,8 @@ BLOCKS = {
     "red block": {"pos": (0.55, -0.20, BLOCK_SIZE / 2), "color": (0.85, 0.10, 0.10)},
     "green block": {"pos": (0.62, 0.00, BLOCK_SIZE / 2), "color": (0.10, 0.70, 0.20)},
     "blue block": {"pos": (0.50, 0.12, BLOCK_SIZE / 2), "color": (0.10, 0.25, 0.85)},
+    "yellow block": {"pos": (0.50, -0.05, BLOCK_SIZE / 2), "color": (0.95, 0.80, 0.30)},
+        
 }
 TRAY_CENTER = (0.35, 0.40)
 TRAY_INNER = 0.16

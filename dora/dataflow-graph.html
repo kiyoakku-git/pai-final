@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+</head>
+
+<body>
+    <div class="mermaid">
+        flowchart TB
+  detector["**detector**"]
+  planner["**planner**"]
+  sim["**sim**"]
+subgraph ___dora___ [dora]
+  subgraph ___timer_timer___ [timer]
+    dora/timer/secs/1[\secs/1/]
+  end
+end
+  sim -- image --> detector
+  detector -- detection --> planner
+  sim -- done --> planner
+  dora/timer/secs/1 -- tick --> planner
+  planner -- command --> sim
+  planner -- look --> sim
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({ startOnLoad: true, securityLevel: 'loose', theme: 'base' });
+    </script>
+</body>
+
+</html>
