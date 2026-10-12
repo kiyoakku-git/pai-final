@@ -9,7 +9,7 @@ from PIL import Image
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from scene import build_scene  # noqa: E402
 from util import to_np  # noqa: E402
-from perception import Detector, box_to_world, draw_detections  # noqa: E402
+from perception import Detector, box_to_world, draw_detections, simple_box_to_world  # noqa: E402
 
 backend = gs.cpu if "--cpu" in sys.argv else gs.gpu
 scene, franka, blocks, eye_cam, video_cam = build_scene(backend=backend)
@@ -33,5 +33,8 @@ for name in labels:
     true = to_np(blocks[name].get_pos())
     err = np.linalg.norm(est[:2] - true[:2]) * 1000 if est is not None else float("nan")
     print(f"{name:12s} score={best['score']:.2f} est={np.round(est, 3)} true={np.round(true, 3)} xy_error={err:.1f} mm")
+    est2 = simple_box_to_world(best["box"], pc)
+    err2 = np.linalg.norm(est2[:2] - true[:2]) * 1000
+    print(f"   simple: est={np.round(est2, 3)} xy_error={err2:.1f} mm")
 draw_detections(rgb, all_dets, "outputs/detect_check.png")
 print("saved outputs/eye_cam.png and outputs/detect_check.png")

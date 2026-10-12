@@ -52,3 +52,10 @@ def draw_detections(rgb, dets, path):
         draw.rectangle(d["box"], outline=(255, 255, 0), width=3)
         draw.text((d["box"][0], max(0, d["box"][1] - 12)), f'{d["label"]} {d["score"]:.2f}', fill=(255, 255, 0))
     img.save(path)
+
+def simple_box_to_world(box, pointcloud):
+    xmin, ymin, xmax, ymax = box
+    cx = int((xmin + xmax)/2)   # box の中心の x（列）
+    cy = int((ymin + ymax)/2)   # box の中心の y（行）
+    pc = to_np(pointcloud)
+    return pc[cy, cx]
