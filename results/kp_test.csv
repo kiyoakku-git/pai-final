@@ -1,0 +1,17 @@
+run,instruction,target,camera_ok,true_ok
+20261018-113300,clean up all the blocks,red block,True,True
+20261018-113300,clean up all the blocks,green block,True,True
+20261018-113300,clean up all the blocks,blue block,True,True
+20261018-113300,clean up all the blocks,yellow block,True,True
+20261018-113520,clean up all the blocks,red block,False,False
+20261018-113520,clean up all the blocks,red block,False,False
+20261018-113520,clean up all the blocks,green block,False,False
+20261018-113520,clean up all the blocks,green block,False,False
+20261018-113520,clean up all the blocks,blue block,False,False
+20261018-113520,clean up all the blocks,blue block,False,False
+20261018-113520,clean up all the blocks,yellow block,False,False
+20261018-113520,clean up all the blocks,yellow block,False,False
+20261018-164936,clean up all the blocks,red block,True,True
+20261018-164936,clean up all the blocks,green block,True,True
+20261018-164936,clean up all the blocks,blue block,True,True
+20261018-164936,clean up all the blocks,yellow block,True,True
