@@ -5,12 +5,13 @@ nodes:
   - id: planner
     path: nodes/planner_node.py
     env:
-      # INSTRUCTION: "clean up all the blocks"
+        INSTRUCTION: "clean up all the blocks"
       # INSTRUCTION: "put the blue block in the tray"
       # INSTRUCTION: "put the yellow block in the tray"
-      INSTRUCTION: "clean up all the blocks"
+      # INSTRUCTION: "put the red and yellow blocks in the tray"
+      # INSTRUCTION: "put the red block in the tray"
       
-      MAX_TRIES: "2"
+        MAX_TRIES: "2"
     inputs:
       tick: dora/timer/millis/1000      # kick-off (only the first tick is used)
       detection: detector/detection
@@ -38,7 +39,12 @@ nodes:
   - id: recorder
     path: nodes/recorder_node.py
     env:
-      INSTRUCTION: "clean up all the blocks"
+        INSTRUCTION: "clean up all the blocks"
+      # INSTRUCTION: "put the blue block in the tray"
+      # INSTRUCTION: "put the yellow block in the tray"
+      # INSTRUCTION: "put the red and yellow blocks in the tray"
+      # INSTRUCTION: "put the red block in the tray"
+
     inputs:
       detection: detector/detection
       done: sim/done
