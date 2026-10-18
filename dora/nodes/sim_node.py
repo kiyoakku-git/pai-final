@@ -13,7 +13,8 @@ from dora import Node
 
 from common import ROOT, read_json, send_array, send_json
 import genesis as gs
-from scene import build_scene, BLOCK_SIZE
+# from scene import build_scene, BLOCK_SIZE
+from scene import BLOCKS, build_scene, random_positions
 from robot import Arm
 from util import to_np
 
@@ -25,7 +26,14 @@ def truth(blocks):
 
 def main():
     backend = gs.cpu if os.environ.get("BACKEND") == "cpu" else gs.gpu
-    scene, franka, blocks, eye_cam, video_cam = build_scene(backend=backend)
+    # scene, franka, blocks, eye_cam, video_cam = build_scene(backend=backend)
+    positions = None
+    if os.environ.get("RANDOM") == "1":
+        seed = int(np.random.randint(100000))
+        positions = random_positions(list(BLOCKS), np.random.default_rng(seed))
+        print(f"[sim] random layout seed={seed}", flush=True)
+    scene, franka, blocks, eye_cam, video_cam = build_scene(backend=backend, positions=positions)
+
     arm = Arm(scene, franka)
     arm.step(50)
     video = os.path.join(ROOT, os.environ.get("VIDEO", "outputs/dora/video.mp4"))

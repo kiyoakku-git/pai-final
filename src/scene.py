@@ -45,8 +45,20 @@ def _add_tray(scene):
     for pos, size in walls:
         scene.add_entity(gs.morphs.Box(pos=pos, size=size, fixed=True), surface=color)
 
+def random_positions(names, rng, x_range=(0.45, 0.65), y_range=(-0.25, 0.20), min_dist=0.08):
+    """Pick a random (x, y) for each block, keeping blocks at least min_dist apart."""
+    placed = {}
+    for name in names:
+        while True:
+            p = (rng.uniform(*x_range), rng.uniform(*y_range))
+            if all(np.hypot(p[0] - q[0], p[1] - q[1]) >= min_dist for q in placed.values()):
+                placed[name] = p
+                break
+    return placed
 
-def build_scene(backend=gs.gpu, video_res=(1280, 720)):
+
+# def build_scene(backend=gs.gpu, video_res=(1280, 720)):
+def build_scene(backend=gs.gpu, video_res=(1280, 720), positions=None):
     """Create the scene and return (scene, franka, blocks, eye_cam, video_cam)."""
     gs.init(backend=backend, logging_level="warning")
     scene = gs.Scene(
@@ -56,11 +68,14 @@ def build_scene(backend=gs.gpu, video_res=(1280, 720)):
     scene.add_entity(gs.morphs.Plane())
     franka = scene.add_entity(gs.morphs.MJCF(file="xml/franka_emika_panda/panda.xml"))
     blocks = {}
+
     for name, spec in BLOCKS.items():
+        pos = spec["pos"] if positions is None else (*positions[name], BLOCK_SIZE / 2)
         blocks[name] = scene.add_entity(
-            gs.morphs.Box(pos=spec["pos"], size=(BLOCK_SIZE,) * 3),
+            gs.morphs.Box(pos=pos, size=(BLOCK_SIZE,) * 3),
             surface=gs.surfaces.Default(color=spec["color"]),
         )
+        
     _add_tray(scene)
     # Camera used by the AI to look at the table (perception).
     eye_cam = scene.add_camera(res=(640, 480), pos=(1.05, 0.05, 0.85), lookat=(0.48, 0.1, 0.0), fov=50, GUI=False)

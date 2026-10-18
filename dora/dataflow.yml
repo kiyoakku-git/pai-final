@@ -21,6 +21,7 @@ nodes:
     path: nodes/sim_node.py
     env:
       VIDEO: "outputs/dora/video.mp4"
+      RANDOM: "1"
     inputs:
       look: planner/look
       command: planner/command
