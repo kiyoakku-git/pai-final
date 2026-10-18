@@ -7,7 +7,8 @@ nodes:
     env:
       # INSTRUCTION: "clean up all the blocks"
       # INSTRUCTION: "put the blue block in the tray"
-      INSTRUCTION: "put the yellow block in the tray"
+      # INSTRUCTION: "put the yellow block in the tray"
+      INSTRUCTION: "clean up all the blocks"
       
       MAX_TRIES: "2"
     inputs:
@@ -32,3 +33,11 @@ nodes:
     inputs:
       image: sim/image
     outputs: [detection]
+
+  - id: recorder
+    path: nodes/recorder_node.py
+    env:
+      INSTRUCTION: "clean up all the blocks"
+    inputs:
+      detection: detector/detection
+      done: sim/done
