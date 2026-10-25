@@ -1,7 +1,3 @@
-# PAI Final Project
-
-Physical AI final project (work in progress).
-
 # 言葉で指示するお片付けロボット / A Robot That Tidies Up from Language Instructions
 
 Physical AI 応用編1 最終課題のコードです。英語の指示文を受け取ったロボットアーム（Franka）が、カメラで対象のブロックを見つけてトレーへ運び、入ったかどうかをもう一度カメラで確かめます。
