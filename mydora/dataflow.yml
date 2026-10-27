@@ -1,0 +1,13 @@
+# dataflow.yml
+
+nodes:
+  - id: talker
+    path: nodes/talker_node.py
+    inputs:
+      tick: dora/timer/millis/500
+    outputs: ["plusone"]
+
+  - id: listener
+    path: nodes/listener_node.py
+    inputs:
+      message: talker/plusone
