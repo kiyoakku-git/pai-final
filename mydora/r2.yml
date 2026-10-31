@@ -1,0 +1,13 @@
+# r2.yml
+
+nodes:
+  - id: sim
+    path: nodes/sim_node.py
+    inputs:
+      tick: dora/timer/millis/500
+    outputs: ["image"]
+
+  - id: viewer
+    path: nodes/viewer_node.py
+    inputs:
+      message: sim/image
