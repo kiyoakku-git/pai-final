@@ -1,4 +1,4 @@
-# sim_node.py  R3-3
+# sim_node.py  simに録画用カメラを足す
 
 import genesis as gs
 import numpy as np
@@ -13,6 +13,8 @@ stage.add_entity(gs.morphs.Plane())
 surface=gs.surfaces.Default(color=(0.85, 0.10, 0.10))
 box =stage.add_entity(gs.morphs.Box(pos=(0.5, 0.5, 0.02), size=(0.04, 0.04, 0.04)), surface=surface)
 cam = stage.add_camera(res=(640, 480), fov=60, pos=(0.8, 0.8, 0.5), lookat=(0.5, 0.5, 0.0))
+video_cam = stage.add_camera(res=(640, 480), fov=60, pos=(1.6, 0.1, 0.9), lookat=(0.4, 0.1, 0.1)) # 録画用カメラ
+
 franka = stage.add_entity(gs.morphs.MJCF(file="xml/franka_emika_panda/panda.xml"))
 
 stage.build() # 設定したものを反映させるためにbuild()する
@@ -49,12 +51,12 @@ def arm_q():   # 現在のアームの関節角度を取得する
 def open_gripper():  # グリッパーを開く
     franka.control_dofs_position(np.array([0.04, 0.04]), FINGER_DOFS)   
     for _ in range(40):
-        stage.step()
+        step_rec()
 
 def close_gripper(steps=40):  # グリッパーを閉じる
     franka.control_dofs_position(np.array([0.0, 0.0]), FINGER_DOFS)   
     for _ in range(steps):
-        stage.step()
+        step_rec()
 
 def move_to(grasp_pos, steps=100):   # アームポジションを指定位置に移動して、グリッパーを下げる
     target = np.asarray(grasp_pos, dtype=float) + np.array([0.0, 0.0, HAND_TO_GRASP])
@@ -67,9 +69,13 @@ def move_to(grasp_pos, steps=100):   # アームポジションを指定位置�
         a = i / steps
         a = a * a * (3 - 2 * a)  # スムーズなステップ: スルースタート、スローストップ
         franka.control_dofs_position(q_start + a * (q_goal - q_start), ARM_DOFS)
-        stage.step()
+        step_rec()
     for _ in range(20):
-        stage.step() 
+        step_rec()
+
+def step_rec(n=1): # 録画用カメラの映像を録画しながら、nステップ進める
+    for _ in range(n):
+        stage.step()
         
 hand = franka.get_link("hand")
 
@@ -98,6 +104,7 @@ for event in node:
 
             stage.step()
 
+            video_cam.start_recording(save_to_filename="r3_demo.mp4", fps=50) # 録画開始
             open_gripper()   # グリッパーを開く
             move_to(pos1)    # blockの真上
             move_to(pos0)    # blockの初期位置
@@ -107,6 +114,8 @@ for event in node:
             move_to(pos4)    # blockを離す位置まで下ろす
             open_gripper()   #グリッパーを開く
 
+            video_cam.stop_recording() # 録画終了、保存
+            
             out_msg = {"block_pos": box.get_pos().tolist()}
             node.send_output("done", pa.array([json.dumps(out_msg)]))         
 
