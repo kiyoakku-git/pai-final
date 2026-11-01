@@ -30,7 +30,7 @@ timer --tick--> planner --look-----> sim --image--> detector
 ## ファイル
 - `r3.yml`：本体のデータフロー（これを実行する）
 - `nodes/planner_node.py`, `nodes/sim_node.py`, `nodes/detector_node.py`
-- `dataflow.yml`, `r2.yml`, `r4.yml`, `nodes/arm_test.py`, `nodes/det_test.py`：途中段階の練習用（r4.yml は現在のノードでは動きません）
+- `dataflow.yml`, `r2.yml`, `r4.yml`, `nodes/arm_test.py`, `nodes/det_test.py`：r2.yml、r4.yml は途中段階の練習用です（現在のノードでは動きません）
 
 ## 動かし方
 ```
