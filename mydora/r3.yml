@@ -1,0 +1,24 @@
+# r3.yml  R3-3
+
+nodes:
+
+  - id: planner
+    path: nodes/planner_node.py
+    inputs:
+      tick: dora/timer/millis/1000      # kick-off (最初のtickだけが使われる )
+      done: sim/done
+      detection: detector/detection
+    outputs: [command, look]
+
+  - id: sim
+    path: nodes/sim_node.py
+    inputs:
+      look: planner/look
+      command: planner/command
+    outputs: ["done", "image"]
+  
+  - id: detector
+    path: nodes/detector_node.py
+    inputs:
+      image: sim/image
+    outputs: ["detection"]

@@ -1,4 +1,4 @@
-# sim_node.py
+# sim_node.py  R3-3
 
 import genesis as gs
 import numpy as np
@@ -12,7 +12,7 @@ stage = gs.Scene(show_viewer=False)
 stage.add_entity(gs.morphs.Plane())
 surface=gs.surfaces.Default(color=(0.85, 0.10, 0.10))
 box =stage.add_entity(gs.morphs.Box(pos=(0.5, 0.5, 0.02), size=(0.04, 0.04, 0.04)), surface=surface)
-cam = stage.add_camera(res=(640, 480), fov=60, pos=(1.5, 1.5, 1.0), lookat=(0.0, 0.0, 0.5))
+cam = stage.add_camera(res=(640, 480), fov=60, pos=(0.8, 0.8, 0.5), lookat=(0.5, 0.5, 0.0))
 franka = stage.add_entity(gs.morphs.MJCF(file="xml/franka_emika_panda/panda.xml"))
 
 stage.build() # 設定したものを反映させるためにbuild()する
@@ -78,6 +78,16 @@ node = Node()
 
 for event in node:
     if event["type"] == "INPUT":
+        if event["id"] == "look":
+
+            pict = cam.render(rgb=True)[0]
+            pointcloud = cam.render_pointcloud()
+            PC, mask = pointcloud
+
+            img = np.concatenate([pict, PC], axis=2).astype(np.float32)
+
+            node.send_output("image", pa.array(img.ravel()), metadata={"shape": json.dumps(list(img.shape))})
+
         if event["id"] == "command":
             json_msg = json.loads(event["value"].to_pylist()[0])
             pos0 = np.array(json_msg["pick"])
@@ -96,9 +106,6 @@ for event in node:
             move_to(pos3)    # blockを運ぶ
             move_to(pos4)    # blockを離す位置まで下ろす
             open_gripper()   #グリッパーを開く
-
-            print( "ブロックの位置:", box.get_pos())
-            print( "ブロックを置くべき位置:", json_msg["place"])
 
             out_msg = {"block_pos": box.get_pos().tolist()}
             node.send_output("done", pa.array([json.dumps(out_msg)]))         
