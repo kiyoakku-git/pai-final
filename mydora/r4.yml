@@ -1,0 +1,16 @@
+# r4.yml  R2-3d, R4
+
+nodes:
+
+  - id: planner
+    path: nodes/planner_node.py
+    inputs:
+      tick: dora/timer/millis/1000      # kick-off (最初のtickだけが使われる )
+      done: sim/done
+    outputs: [command]
+
+  - id: sim
+    path: nodes/sim_node.py
+    inputs:
+      command: planner/command
+    outputs: ["done"]
