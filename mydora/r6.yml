@@ -28,4 +28,4 @@ nodes:
       tick: dora/timer/millis/1000
     outputs: [plan]
     env:
-        INSTRUCTION: "赤をピックアップして黄色の上に置け"
+        INSTRUCTION: "黄色をピックアップして赤色の上に置け"
