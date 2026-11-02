@@ -1,0 +1,31 @@
+# r6.yml  R6-4
+nodes:
+
+  - id: planner
+    path: nodes/planner_node.py
+    inputs:
+      plan: brain/plan
+      done: sim/done
+      detection: detector/detection
+    outputs: [command, look]
+
+  - id: sim
+    path: nodes/sim_node.py
+    inputs:
+      look: planner/look
+      command: planner/command
+    outputs: ["done", "image"]
+  
+  - id: detector
+    path: nodes/detector_node.py
+    inputs:
+      image: sim/image
+    outputs: ["detection"]
+
+  - id: brain
+    path: nodes/brain_node.py
+    inputs:
+      tick: dora/timer/millis/1000
+    outputs: [plan]
+    env:
+        INSTRUCTION: "赤をピックアップして黄色の上に置け"

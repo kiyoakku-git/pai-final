@@ -1,14 +1,10 @@
-# planner_node.py   R6−2, R6-3
+# planner_node.py   R6-4
 
 import json
 from dora import Node
 import pyarrow as pa
 import numpy as np
 
-
-plan = {"pick": "red block", "place_on": "yellow block"}
-
-send_message = False
 node = Node()
 
 for event in node:
@@ -16,10 +12,9 @@ for event in node:
         break
     if event["type"] == "INPUT":
 
-        if event["id"] == "tick": # 最初のtickの合図のみ受ける
-            if not send_message:
-                send_message = True
-                node.send_output("look",pa.array([json.dumps([plan["pick"], plan["place_on"]])]))
+        if event["id"] == "plan": 
+            plan = json.loads(event["value"].to_pylist()[0])
+            node.send_output("look",pa.array([json.dumps([plan["pick"], plan["place_on"]])]))
 
         if event["id"] == "detection": 
             msg = json.loads(event["value"].to_pylist()[0])
