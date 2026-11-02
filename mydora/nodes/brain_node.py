@@ -13,7 +13,8 @@ rules = """あなたは、ロボットを制御するための指示を出すAI�
 1. 返事は JSON だけにすること（説明文は付けない）
 2. キーは pick と place_on にすること
 3. 色は英語で "red block" のように書くこと
-4. 返事の例：
+4. 使える名前は red block, yellow block, green block, blue block の 4 つだけ
+5. 返事の例：
 {
   "pick": "red block",
   "place_on": "yellow block"

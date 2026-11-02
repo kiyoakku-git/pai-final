@@ -1,4 +1,4 @@
-# sim_node.py  R6-2（sim に黄色を足す）,R6-3
+# sim_node.py  R6-2（sim に黄色を足す）,R6-3, R6-5　ブロックを４つにする
 
 import genesis as gs
 import numpy as np
@@ -14,10 +14,15 @@ stage.add_entity(gs.morphs.Plane())
 # blockの定義
 red_surface    = gs.surfaces.Default(color=(0.85, 0.10, 0.10))
 yellow_surface = gs.surfaces.Default(color=(0.90, 0.80, 0.10))
+green_surface  = gs.surfaces.Default(color=(0.10, 0.70, 0.20))
+blue_surface   = gs.surfaces.Default(color=(0.10, 0.25, 0.85))
+
 
 boxes = {}  # 空の辞書
-boxes["red block"]    = stage.add_entity(gs.morphs.Box(pos=(0.5, 0.5, 0.02), size=(0.04, 0.04, 0.04)), surface=red_surface)
-boxes["yellow block"] = stage.add_entity(gs.morphs.Box(pos=(0.5, 0.35, 0.02), size=(0.04, 0.04, 0.04)), surface=yellow_surface)
+boxes["red block"]    = stage.add_entity(gs.morphs.Box(pos=(0.5,  0.5,  0.02), size=(0.04, 0.04, 0.04)), surface=red_surface)
+boxes["yellow block"] = stage.add_entity(gs.morphs.Box(pos=(0.5,  0.35, 0.02), size=(0.04, 0.04, 0.04)), surface=yellow_surface)
+boxes["green block"]  = stage.add_entity(gs.morphs.Box(pos=(0.65, 0.5,  0.02), size=(0.04, 0.04, 0.04)), surface=green_surface)
+boxes["blue block"]   = stage.add_entity(gs.morphs.Box(pos=(0.65, 0.35, 0.02), size=(0.04, 0.04, 0.04)), surface=blue_surface)
 
 
 
@@ -27,7 +32,6 @@ video_cam = stage.add_camera(res=(640, 480), fov=60, pos=(1.6, 0.1, 0.9), lookat
 franka = stage.add_entity(gs.morphs.MJCF(file="xml/franka_emika_panda/panda.xml"))
 
 stage.build() # 設定したものを反映させるためにbuild()する
-
 
 # set_dofs_kp / set_dofs_kv / set_dofs_position
 HOME_QPOS = np.array([0.0, -0.3, 0.0, -2.2, 0.0, 2.0, 0.79, 0.04, 0.04])
@@ -42,6 +46,7 @@ franka.control_dofs_position(HOME_QPOS)
 
 for _ in range(100): # build()後に、control_dofs_position した後に１秒待つ
     stage.step()
+home_q = franka.get_dofs_position()         # ホームポジションの保存
 
 ARM_DOFS = np.arange(7)                     # 関節の番号配列 0-6 の７個
 FINGER_DOFS = np.arange(7, 9)               # 指の位置 7-8 の２個
@@ -82,6 +87,19 @@ def move_to(grasp_pos, steps=100):   # アームポジションを指定位置�
     for _ in range(20):
         step_rec()
 
+def move_home(steps=150):
+    quat = DOWN_QUAT
+    q_goal = to_np(home_q)[: len(ARM_DOFS)]
+    q_start = arm_q()
+
+    for i in range(1, steps + 1):
+        a = i / steps
+        a = a * a * (3 - 2 * a)  # スムーズなステップ: スルースタート、スローストップ
+        franka.control_dofs_position(q_start + a * (q_goal - q_start), ARM_DOFS)
+        step_rec()
+    for _ in range(20):
+        step_rec()
+
 def step_rec(n=1): # 録画用カメラの映像を録画しながら、nステップ進める
     for _ in range(n):
         stage.step()
@@ -111,7 +129,9 @@ for event in node:
             pos1 = pos0 + np.array([0.0, 0.0, 0.15])    # blockの真上
             pos2 = pos0 + np.array([0.0, 0.0, 0.20])    # blockを持ち上げた位置
             pos3 = np.array(json_msg["place"]) + np.array([0.0, 0.0, 0.20])    # blockを運んで置く位置
-            pos4 = np.array(json_msg["place"]) + np.array([0.0, 0.0, 0.010])    # blockを離す位置 
+            pos4 = np.array(json_msg["place"]) + np.array([0.0, 0.0, 0.010])   # blockを離す位置
+            pos5 = np.array(json_msg["place"]) + np.array([0.0, 0.0, 0.20])    # 元に戻るためpos4よりグリッパーをあげる
+                        
 
             stage.step()
 
@@ -123,8 +143,9 @@ for event in node:
             move_to(pos2)    # blockを持ち上げる
             move_to(pos3)    # blockを運ぶ
             move_to(pos4)    # blockを離す位置まで下ろす
-            open_gripper()   #グリッパーを開く
-
+            open_gripper()   # グリッパーを開いてblockを離す
+            move_to(pos5)    # 元に戻るためpos4よりグリッパーをあげる
+            move_home()      # ホーム状態に戻る
             video_cam.stop_recording() # 録画終了、保存
 
             box_pos = {}
