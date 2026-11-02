@@ -1,4 +1,4 @@
-# sim_node.py  simに録画用カメラを足す
+# sim_node.py  R6-2（sim に黄色を足す）,R6-3
 
 import genesis as gs
 import numpy as np
@@ -10,8 +10,17 @@ import pyarrow as pa
 gs.init() # 床、アーム、BOXを表示するために必要な初期化処理
 stage = gs.Scene(show_viewer=False)
 stage.add_entity(gs.morphs.Plane())
-surface=gs.surfaces.Default(color=(0.85, 0.10, 0.10))
-box =stage.add_entity(gs.morphs.Box(pos=(0.5, 0.5, 0.02), size=(0.04, 0.04, 0.04)), surface=surface)
+
+# blockの定義
+red_surface    = gs.surfaces.Default(color=(0.85, 0.10, 0.10))
+yellow_surface = gs.surfaces.Default(color=(0.90, 0.80, 0.10))
+
+boxes = {}  # 空の辞書
+boxes["red block"]    = stage.add_entity(gs.morphs.Box(pos=(0.5, 0.5, 0.02), size=(0.04, 0.04, 0.04)), surface=red_surface)
+boxes["yellow block"] = stage.add_entity(gs.morphs.Box(pos=(0.5, 0.35, 0.02), size=(0.04, 0.04, 0.04)), surface=yellow_surface)
+
+
+
 cam = stage.add_camera(res=(640, 480), fov=60, pos=(0.8, 0.8, 0.5), lookat=(0.5, 0.5, 0.0))
 video_cam = stage.add_camera(res=(640, 480), fov=60, pos=(1.6, 0.1, 0.9), lookat=(0.4, 0.1, 0.1)) # 録画用カメラ
 
@@ -91,8 +100,10 @@ for event in node:
             PC, mask = pointcloud
 
             img = np.concatenate([pict, PC], axis=2).astype(np.float32)
-
-            node.send_output("image", pa.array(img.ravel()), metadata={"shape": json.dumps(list(img.shape))})
+            labels = json.loads(event["value"].to_pylist()[0])
+            metadata = {"shape": json.dumps(list(img.shape)), "labels": json.dumps(labels)}
+                        
+            node.send_output("image", pa.array(img.ravel()), metadata=metadata)
 
         if event["id"] == "command":
             json_msg = json.loads(event["value"].to_pylist()[0])
@@ -100,11 +111,11 @@ for event in node:
             pos1 = pos0 + np.array([0.0, 0.0, 0.15])    # blockの真上
             pos2 = pos0 + np.array([0.0, 0.0, 0.20])    # blockを持ち上げた位置
             pos3 = np.array(json_msg["place"]) + np.array([0.0, 0.0, 0.20])    # blockを運んで置く位置
-            pos4 = np.array(json_msg["place"]) + np.array([0.0, 0.0, 0.03])    # blockを離す位置
+            pos4 = np.array(json_msg["place"]) + np.array([0.0, 0.0, 0.010])    # blockを離す位置 
 
             stage.step()
 
-            video_cam.start_recording(save_to_filename="r3_demo.mp4", fps=50) # 録画開始
+            video_cam.start_recording(save_to_filename="r6_demo.mp4", fps=50) # 録画開始
             open_gripper()   # グリッパーを開く
             move_to(pos1)    # blockの真上
             move_to(pos0)    # blockの初期位置
@@ -115,8 +126,11 @@ for event in node:
             open_gripper()   #グリッパーを開く
 
             video_cam.stop_recording() # 録画終了、保存
-            
-            out_msg = {"block_pos": box.get_pos().tolist()}
+
+            box_pos = {}
+            for name, box in boxes.items():
+                box_pos[name] = box.get_pos().tolist()
+            out_msg = {"block_pos": box_pos}
             node.send_output("done", pa.array([json.dumps(out_msg)]))         
 
 
