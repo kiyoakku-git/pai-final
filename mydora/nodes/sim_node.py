@@ -1,11 +1,11 @@
-# sim_node.py  R6-2（sim に黄色を足す）,R6-3, R6-5　ブロックを４つにする
+# sim_node.py  R6-6
 
 import genesis as gs
 import numpy as np
 from dora import Node
 import json
 import pyarrow as pa
-
+from PIL import Image
 
 gs.init() # 床、アーム、BOXを表示するために必要な初期化処理
 stage = gs.Scene(show_viewer=False)
@@ -19,10 +19,10 @@ blue_surface   = gs.surfaces.Default(color=(0.10, 0.25, 0.85))
 
 
 boxes = {}  # 空の辞書
-boxes["red block"]    = stage.add_entity(gs.morphs.Box(pos=(0.5,  0.5,  0.02), size=(0.04, 0.04, 0.04)), surface=red_surface)
-boxes["yellow block"] = stage.add_entity(gs.morphs.Box(pos=(0.5,  0.35, 0.02), size=(0.04, 0.04, 0.04)), surface=yellow_surface)
-boxes["green block"]  = stage.add_entity(gs.morphs.Box(pos=(0.65, 0.5,  0.02), size=(0.04, 0.04, 0.04)), surface=green_surface)
-boxes["blue block"]   = stage.add_entity(gs.morphs.Box(pos=(0.65, 0.35, 0.02), size=(0.04, 0.04, 0.04)), surface=blue_surface)
+boxes["red block"]    = stage.add_entity(gs.morphs.Box(pos=(0.4,  0.5,  0.02), size=(0.04, 0.04, 0.04)), surface=red_surface)
+boxes["yellow block"] = stage.add_entity(gs.morphs.Box(pos=(0.4,  0.35, 0.02), size=(0.04, 0.04, 0.04)), surface=yellow_surface)
+boxes["green block"]  = stage.add_entity(gs.morphs.Box(pos=(0.55, 0.5,  0.02), size=(0.04, 0.04, 0.04)), surface=green_surface)
+boxes["blue block"]   = stage.add_entity(gs.morphs.Box(pos=(0.55, 0.35, 0.02), size=(0.04, 0.04, 0.04)), surface=blue_surface)
 
 
 
@@ -88,6 +88,7 @@ def move_to(grasp_pos, steps=100):   # アームポジションを指定位置�
         step_rec()
 
 def move_home(steps=150):
+
     quat = DOWN_QUAT
     q_goal = to_np(home_q)[: len(ARM_DOFS)]
     q_start = arm_q()
@@ -100,6 +101,10 @@ def move_home(steps=150):
     for _ in range(20):
         step_rec()
 
+    after_img = np.asarray(cam.render(rgb=True)[0]).astype(np.uint8) # look.png 撮影
+    Image.fromarray(after_img).save(f"after_{count}.png")
+
+
 def step_rec(n=1): # 録画用カメラの映像を録画しながら、nステップ進める
     for _ in range(n):
         stage.step()
@@ -108,6 +113,7 @@ hand = franka.get_link("hand")
 
 
 node = Node()
+count = 0
 
 for event in node:
     if event["type"] == "INPUT":
@@ -124,6 +130,8 @@ for event in node:
             node.send_output("image", pa.array(img.ravel()), metadata=metadata)
 
         if event["id"] == "command":
+
+
             json_msg = json.loads(event["value"].to_pylist()[0])
             pos0 = np.array(json_msg["pick"])
             pos1 = pos0 + np.array([0.0, 0.0, 0.15])    # blockの真上
@@ -135,7 +143,10 @@ for event in node:
 
             stage.step()
 
-            video_cam.start_recording(save_to_filename="r6_demo.mp4", fps=50) # 録画開始
+            count += 1
+            filename = f"r6_demo_{count}.mp4"
+            video_cam.start_recording(save_to_filename = filename, fps=50) # 録画開始
+
             open_gripper()   # グリッパーを開く
             move_to(pos1)    # blockの真上
             move_to(pos0)    # blockの初期位置

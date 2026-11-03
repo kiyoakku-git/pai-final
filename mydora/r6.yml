@@ -1,4 +1,4 @@
-# r6.yml  R6-4
+# r6.yml  R6-6
 nodes:
 
   - id: planner
@@ -28,4 +28,4 @@ nodes:
       tick: dora/timer/millis/1000
     outputs: [plan]
     env:
-        INSTRUCTION: "青色をピックアップして黄色の上に置け"
+        INSTRUCTION: "青を緑の上に置け。次に黄色を青の上に置け。"

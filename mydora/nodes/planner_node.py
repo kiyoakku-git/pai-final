@@ -1,4 +1,4 @@
-# planner_node.py   R6-4
+# planner_node.py   R6-6
 
 import json
 from dora import Node
@@ -6,6 +6,8 @@ import pyarrow as pa
 import numpy as np
 
 node = Node()
+steps = []
+i = 0
 
 for event in node:
     if event["type"] == "STOP":
@@ -13,10 +15,13 @@ for event in node:
     if event["type"] == "INPUT":
 
         if event["id"] == "plan": 
-            plan = json.loads(event["value"].to_pylist()[0])
+            steps = json.loads(event["value"].to_pylist()[0])["steps"]
+            i = 0
+            plan = steps[i]
             node.send_output("look",pa.array([json.dumps([plan["pick"], plan["place_on"]])]))
 
         if event["id"] == "detection": 
+            plan = steps[i]
             msg = json.loads(event["value"].to_pylist()[0])
 
             pick_pos = np.array(msg[plan["pick"]]) + np.array([0.0, 0.0, -0.02])  # 0.02m下げる: 下のblock
@@ -28,3 +33,9 @@ for event in node:
             json_msg = json.loads(event["value"].to_pylist()[0])
             print( "ブロックの位置:", json_msg["block_pos"])
             print( "ブロックを置くべき位置:", new_msg["place"])
+            i += 1 
+            if i < len(steps):
+                plan = steps[i]
+                node.send_output("look",pa.array([json.dumps([plan["pick"], plan["place_on"]])]))
+            else :
+                print ("完了")
